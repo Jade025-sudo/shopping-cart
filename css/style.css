@@ -54,9 +54,9 @@ body{
 .delete-btn,
 .option-btn{
    display: inline-block;
-   padding:10px 30px;
+   padding:5px 15px;
    cursor: pointer;
-   font-size: 18px;
+   font-size: 10px;
    color:var(--white);
    border-radius: 5px;
    text-transform: capitalize;
@@ -152,7 +152,6 @@ body{
    box-shadow: var(--box-shadow);
    border-radius: 5px;
    margin:20px auto;
-   max-width: 500px;
 }
 
 .container .user-profile p{
@@ -261,8 +260,10 @@ body{
 
 .container .shopping-cart table tr td input[type="number"]{
    width: 80px;
+   height: 5px;
    border:var(--border);
-   padding:12px 14px;
+   padding: 12px 14px;
+   padding-bottom: 10px;
    font-size: 20px;
    color:var(--black);
 }
@@ -298,3 +299,12 @@ body{
       height: 200px;
    }
 } 
+
+.products {
+   background: #fff;
+   border-radius: 10px;
+   padding: 20px;
+   margin-bottom: 30px;
+   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+

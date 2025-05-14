@@ -3,6 +3,8 @@
 include 'config.php';
 session_start();
 $user_id = $_SESSION['user_id'];
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+
 
 if(!isset($user_id)){
    header('location:login.php');
@@ -76,24 +78,41 @@ if(isset($message)){
 
 <div class="container">
 
-<div class="user-profile">
+<?php
+$select_user = mysqli_query($conn, "SELECT * FROM `user_form` WHERE id = '$user_id'") or die('query failed');
+if(mysqli_num_rows($select_user) > 0){
+    $fetch_user = mysqli_fetch_assoc($select_user);
+}
+?>
 
-   <?php
-      $select_user = mysqli_query($conn, "SELECT * FROM `user_form` WHERE id = '$user_id'") or die('query failed');
-      if(mysqli_num_rows($select_user) > 0){
-         $fetch_user = mysqli_fetch_assoc($select_user);
-      };
-   ?>
 
-   <p> username : <span><?php echo $fetch_user['name']; ?></span> </p>
-   <p> email : <span><?php echo $fetch_user['email']; ?></span> </p>
-   <div class="flex">
-      <a href="login.php" class="btn">login</a>
-      <a href="register.php" class="option-btn">register</a>
-      <a href="index.php?logout=<?php echo $user_id; ?>" onclick="return confirm('are your sure you want to logout?');" class="delete-btn">logout</a>
-   </div>
-
+<div class="user-profile" style="
+   position: absolute; 
+   top: 40px; 
+   right: 30px; 
+   background: #f0f0f0; 
+   padding: 15px 20px; 
+   padding-left: 10px;
+   border-radius: 12px; 
+   box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+   width: 220px; 
+   text-align: center;
+   z-index: 999;
+">
+   <img src="images/default-user.png" alt="Profile" style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px;">
+   <p style="margin: 5px 0;"><strong><?php echo $fetch_user['name']; ?></strong></p>
+   <p style="margin: 5px 0; font-size: 0.9em;"><?php echo $fetch_user['email']; ?></p>
+   <a href="edit_profile.php" class="option-btn" style="margin-top: 8px;">Edit</a>
+   <br>
+   <a href="index.php?logout=<?php echo $user_id; ?>" class="delete-btn" style="margin-top: 5px;">Logout</a>
 </div>
+
+<div class="main-content" style="margin-top: 120px; padding: 20px;">
+
+<form action="" method="GET" style="margin: 20px 0;">
+   <input type="text" name="search" placeholder="Search products..." value="<?php echo htmlspecialchars($search); ?>">
+   <input type="submit" value="Search" class="btn">
+</form>
 
 <div class="products">
 
@@ -102,15 +121,16 @@ if(isset($message)){
    <div class="box-container">
 
    <?php
-      $select_product = mysqli_query($conn, "SELECT * FROM `products`") or die('query failed');
+      $search = isset($_GET['search']) ? $_GET['search'] : '';
+      $select_product = mysqli_query($conn, "SELECT * FROM `products` WHERE name LIKE '%$search%'") or die('query failed');      
       if(mysqli_num_rows($select_product) > 0){
          while($fetch_product = mysqli_fetch_assoc($select_product)){
    ?>
       <form method="post" class="box" action="">
          <img src="images/<?php echo $fetch_product['image']; ?>" alt="">
          <div class="name"><?php echo $fetch_product['name']; ?></div>
-         <div class="price">$<?php echo $fetch_product['price']; ?>/-</div>
-         <input type="number" min="1" name="product_quantity" value="1">
+         <div class="price">$<?php echo $fetch_product['price']; ?></div>
+         <input type="number" min="1" name="product_quantity" value="">
          <input type="hidden" name="product_image" value="<?php echo $fetch_product['image']; ?>">
          <input type="hidden" name="product_name" value="<?php echo $fetch_product['name']; ?>">
          <input type="hidden" name="product_price" value="<?php echo $fetch_product['price']; ?>">
@@ -130,15 +150,16 @@ if(isset($message)){
    <h1 class="heading">shopping cart</h1>
 
    <table>
-      <thead>
+      <d>
          <th>image</th>
          <th>name</th>
          <th>price</th>
          <th>quantity</th>
          <th>total price</th>
          <th>action</th>
-      </thead>
-      <tbody>
+</div>
+      </head>
+      <body>
       <?php
          $cart_query = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
          $grand_total = 0;
@@ -148,7 +169,7 @@ if(isset($message)){
          <tr>
             <td><img src="images/<?php echo $fetch_cart['image']; ?>" height="100" alt=""></td>
             <td><?php echo $fetch_cart['name']; ?></td>
-            <td>$<?php echo $fetch_cart['price']; ?>/-</td>
+            <td>$<?php echo $fetch_cart['price']; ?></td>
             <td>
                <form action="" method="post">
                   <input type="hidden" name="cart_id" value="<?php echo $fetch_cart['id']; ?>">
@@ -156,7 +177,7 @@ if(isset($message)){
                   <input type="submit" name="update_cart" value="update" class="option-btn">
                </form>
             </td>
-            <td>$<?php echo $sub_total = ($fetch_cart['price'] * $fetch_cart['quantity']); ?>/-</td>
+            <td>$<?php echo $sub_total = ($fetch_cart['price'] * $fetch_cart['quantity']); ?></td>
             <td><a href="index.php?remove=<?php echo $fetch_cart['id']; ?>" class="delete-btn" onclick="return confirm('remove item from cart?');">remove</a></td>
          </tr>
       <?php
@@ -171,11 +192,13 @@ if(isset($message)){
          <td>$<?php echo $grand_total; ?>/-</td>
          <td><a href="index.php?delete_all" onclick="return confirm('delete all from cart?');" class="delete-btn <?php echo ($grand_total > 1)?'':'disabled'; ?>">delete all</a></td>
       </tr>
-   </tbody>
+   </body>
    </table>
 
    <div class="cart-btn">  
-      <a href="#" class="btn <?php echo ($grand_total > 1)?'':'disabled'; ?>">proceed to checkout</a>
+   <a href="checkout.php" class="btn <?php echo ($grand_total > 1)?'':'disabled'; ?>">proceed to checkout</a>
+
+
    </div>
 
 </div>
